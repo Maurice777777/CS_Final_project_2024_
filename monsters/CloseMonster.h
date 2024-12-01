@@ -3,50 +3,39 @@
 
 #include <string>
 #include <map>
-#include "../Object.h"
-//#include "shapes/Point.h"
+#include <memory>  // 添加這一行來使用 std::shared_ptr
+#include "shapes/Point.h"
+#include "shapes/Rectangle.h"
 
-enum class CloseMonsterState
-{
-    RUN_LEFT,
-    RUN_RIGHT,
-    RUN_DOWN,
-    RUN_UP,
-    UPPER_LEFT,
-    UPPER_RIGHT,
-    DOWN_LEFT,
-    DOWN_RIGHT,
-    ATTACK_LEFT,
-    ATTACK_RIGHT,
-    ATTACK_FRONT,
-    ATTACK_BACK,
-    ATTACK_UPPER_LEFT,
-    ATTACK_UPPER_RIGHT,
-    ATTACK_DOWN_LEFT,
-    ATTACK_DOWN_RIGHT,
+// 狀態的定義
+enum class CloseMonsterState {
+    WALK,
+    RUN,
+    ATTACK,
+    CROUCH,
     CLOSEMONSTERSTATE_MAX
 };
 
-class CloseMonster : public Object
-{
-    public:
-        void init();
-        void update();
-        void draw();
-        void set_position(int x,int y);
-        Point get_position() const;
-        static CloseMonster* create_monster(CloseMonsterState state);
-    private:
-        std::map<CloseMonsterState, std::string> gifPath; // 存儲每個狀態對應的 GIF 路徑
-        double speed = 2.0; // 怪物移動速度
-        bool is_charging = false; // 是否正在衝刺
-        int charge_counter = 0; // 衝刺計數器
-        static constexpr int charge_duration = 60; // 衝刺持續時間（幀數）
-        static constexpr double charge_speed_multiplier = 3.0; // 衝刺時的速度倍數
-        static constexpr double attack_range = 100.0; // 攻擊範圍
-        static constexpr double charge_range = 200.0; // 開始衝刺的範圍
-        CloseMonsterState state = CloseMonsterState::RUN_DOWN;
+class CloseMonster {
+public:
+    void init();
+    void update();
+    void draw();
+    void set_position(int x, int y);
 
+private:
+    CloseMonsterState state = CloseMonsterState::WALK;
+    double speed = 3.0; // 基本移動速度
+    bool is_charging = false; // 用於標記是否正在衝刺
+    int charge_counter = 0;
+    double charge_speed_multiplier = 2.0; // 衝刺時速度的倍數
+    int attack_range = 20; // 攻擊的距離
+    int charge_range = 100; // 觸發衝刺的距離
+    int charge_duration = 60; // 衝刺持續的時間（以幀計）
+    std::shared_ptr<Rectangle> shape; // 使用 shared_ptr，確保包含了 <memory> 頭檔
+
+    // GIF 路徑對應
+    std::map<std::pair<CloseMonsterState, int>, std::string> gifPath;
 };
 
-#endif // REDWITCH_H_INCLUDED
+#endif // CLOSEMONSTER_H_INCLUDED

@@ -2,170 +2,107 @@
 #include "data/DataCenter.h"
 #include "data/GIFCenter.h"
 #include "algif5/algif.h"
-#include "shapes/Rectangle.h"
 #include "shapes/Point.h"
-#include "../Witch_bullet.h"
-#include "../RedWitch.h"
+#include "shapes/Rectangle.h"
+#include <cmath>
+#define M_PI 3.14159265358979323846
 
-
-/*
-所在資料夾位置：
-
-走：./assets/gif/Monster-closecombat/KnightBasic/Walk
-跑：./assets/gif/Monster-closecombat/KnightBasic/Run
-出拳：./assets/gif/Monster-closecombat/KnightAdvCombat/Knock/
-蹲下：./assets/gif/Monster-closecombat/KnightExMovement/Crouch/
-*/
 namespace CloseMonsterSetting {
-    static constexpr char gif_basic_root_path[50] = "./assets/gif/Monster-closecombat/KnightBasic/";
-    static constexpr char gif_atk_root_path[50] = "./assets/gif/Monster-closecombat/KnightAdvCombat/";
-    static constexpr char gif_move_root_path[60] = "./assets/gif/Monster-closecombat/KnightExMovement/";
-    static constexpr char gif_basic_postfix[][30] = {
-        "Run/Knight_Run_dir",
-        "Walk/Knight_Walk_dir"
+    static constexpr char gif_basic_root_path[] = "./assets/gif/Monster-closecombat/KnightBasic/";
+    static constexpr char gif_atk_root_path[] = "./assets/gif/Monster-closecombat/KnightAdvCombat/";
+    static constexpr char gif_move_root_path[] = "./assets/gif/Monster-closecombat/KnightExMovement/";
+    static constexpr char gif_postfix[][6] = {
+        "1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif"
     };
-    static constexpr char gif_atk_postfix[20] = "Knight_Knock_dir";
-    static constexpr char gif_move_postfix[20] = "Knight_Crouch_dir";
-    static constexpr int charge_duration = 60; // 衝刺持續時間（幀數）
-    static constexpr double charge_speed_multiplier = 3.0; // 衝刺時的速度倍數
-    static constexpr double attack_range = 100.0; // 攻擊範圍
-    static constexpr double charge_range = 200.0; // 開始衝刺的範圍
 }
 
-
-void CloseMonster::init()
-{
-    // set walk/run gif path for each direction
-    for (int dir = 1; dir <= 8; ++dir) 
-    {
+void CloseMonster::init() {
+    // 設定走路和跑步的 gif path
+    for (int dir = 0; dir < 8; ++dir) {
         char buffer[100];
+        // Walk GIF Path
+        sprintf(buffer, "%sWalk/Knight_Walk_dir%s", CloseMonsterSetting::gif_basic_root_path, CloseMonsterSetting::gif_postfix[dir]);
+        gifPath[{CloseMonsterState::WALK, dir}] = std::string(buffer);
 
-        // 設置走路動作的 GIF 路徑
-        sprintf(buffer, "%s%s%d.gif",
-            CloseMonsterSetting::gif_basic_root_path,
-            CloseMonsterSetting::gif_basic_postfix[1],  // Walk 動作
-            dir);
-        gifPath[static_cast<CloseMonsterState>(dir - 1)] = std::string{buffer};
-
-        // 設置跑步動作的 GIF 路徑
-        sprintf(buffer, "%s%s%d.gif",
-            CloseMonsterSetting::gif_basic_root_path,
-            CloseMonsterSetting::gif_basic_postfix[0],  // Run 動作
-            dir);
-        gifPath[static_cast<CloseMonsterState>(dir + 7)] = std::string{buffer};
+        // Run GIF Path
+        sprintf(buffer, "%sRun/Knight_Run_dir%s", CloseMonsterSetting::gif_basic_root_path, CloseMonsterSetting::gif_postfix[dir]);
+        gifPath[{CloseMonsterState::RUN, dir}] = std::string(buffer);
     }
 
-    // set attack gifs for each direction
-    for (int dir = 1; dir <= 8; ++dir) 
-    {
+    // 設定攻擊和蹲下的 gif path
+    for (int dir = 0; dir < 8; ++dir) {
         char buffer[100];
-        sprintf(buffer, "%s%s%d.gif",
-            CloseMonsterSetting::gif_atk_root_path,
-            CloseMonsterSetting::gif_atk_postfix,
-            dir);
-        gifPath[static_cast<CloseMonsterState>(dir + 15)] = std::string{buffer};
+        // Attack GIF Path
+        sprintf(buffer, "%sKnock/Knight_Knock_dir%s", CloseMonsterSetting::gif_atk_root_path, CloseMonsterSetting::gif_postfix[dir]);
+        gifPath[{CloseMonsterState::ATTACK, dir}] = std::string(buffer);
+
+        // Crouch GIF Path
+        sprintf(buffer, "%sCrouch/Knight_Crouch_dir%s", CloseMonsterSetting::gif_move_root_path, CloseMonsterSetting::gif_postfix[dir]);
+        gifPath[{CloseMonsterState::CROUCH, dir}] = std::string(buffer);
     }
 
-    // set crouch gif for each direction
-    for (int dir = 1; dir <= 8; ++dir) 
-    {
-        char buffer[100];
-        sprintf(buffer, "%s%s%d.gif",
-            CloseMonsterSetting::gif_move_root_path,
-            CloseMonsterSetting::gif_move_postfix,
-            dir);
-        gifPath[static_cast<CloseMonsterState>(dir + 23)] = std::string{buffer};
-    }
-
-    // set initial position and hit box of monster
+    // 設定初始位置和碰撞盒
     GIFCenter *GIFC = GIFCenter::get_instance();
-    ALGIF_ANIMATION *gif = GIFC->get(gifPath[state]);
+    ALGIF_ANIMATION *gif = GIFC->get(gifPath[{CloseMonsterState::WALK, 0}]); // 預設初始為向左下方走
     DataCenter *DC = DataCenter::get_instance();
     shape.reset(new Rectangle(DC->window_width / 2,
-                          DC->window_height / 2,
-                          DC->window_width / 2 + gif->width,
-                          DC->window_height / 2 + gif->height));
+                              DC->window_height / 2,
+                              DC->window_width / 2 + gif->width,
+                              DC->window_height / 2 + gif->height));
 }
 
-
-void CloseMonster::draw()
-{
-    // load GIF from GIFCenter based on current state
-    GIFCenter *GIFC = GIFCenter::get_instance();
-    ALGIF_ANIMATION *gif = GIFC->get(gifPath[state]);
-   if (gif) 
-   {
-        algif_draw_gif(gif,
-                   shape->center_x() - gif->width / 2,
-                   shape->center_y() - gif->height / 2,
-                   0);
-   }
-}
-
-void CloseMonster::update()
-{
+void CloseMonster::update() {
     DataCenter *DC = DataCenter::get_instance();
     Point hero_position = DC->witch->get_position();
-    double dx = shape->center_x() - hero_position.x;
-    double dy = shape->center_y() - hero_position.y;
+
+    double dx = hero_position.x - shape->center_x();
+    double dy = hero_position.y - shape->center_y();
     double distance_to_hero = std::sqrt(dx * dx + dy * dy);
 
-
-    // 如果正在衝刺，更新衝刺狀態
-    if (is_charging) 
-    {
-        charge_counter--;
-        if (charge_counter <= 0) 
-        {
+    // 根據距離和狀態決定下一步動作
+    if (is_charging) {
+        // Charging towards hero
+        if (charge_counter > 0) {
+            shape->update_center_x(shape->center_x() + charge_speed_multiplier * speed * (dx / distance_to_hero));
+            shape->update_center_y(shape->center_y() + charge_speed_multiplier * speed * (dy / distance_to_hero));
+            charge_counter--;
+        } else {
             is_charging = false;
-        } 
-        else 
-        {
-            // 朝著原本確定的方向衝刺
-            double dx = hero_position.x - shape->center_x();
-            double dy = hero_position.y - shape->center_y();
-            double magnitude = sqrt(dx * dx + dy * dy);
-            shape->update_center_x(shape->center_x() + (dx / magnitude) * speed * CloseMonsterSetting::charge_speed_multiplier);
-            shape->update_center_y(shape->center_y() + (dy / magnitude) * speed * CloseMonsterSetting::charge_speed_multiplier);
-            return;
+            state = CloseMonsterState::WALK; // 回到行走狀態
         }
-    }
-
-    // 根據與 Hero 的距離進行不同動作
-    if (distance_to_hero < CloseMonsterSetting::attack_range) {
-        // 進入攻擊狀態
-        state = static_cast<CloseMonsterState>(15 + static_cast<int>(state) % 8); // 將狀態設為對應方向的攻擊動作
-    } 
-    else if (distance_to_hero < CloseMonsterSetting::charge_range && !is_charging) 
-    {
-        // 進入衝刺狀態
+    } else if (distance_to_hero <= attack_range) {
+        // 距離足夠近，執行攻擊
+        state = CloseMonsterState::ATTACK;
+    } else if (distance_to_hero <= charge_range) {
+        // 進入蹲下並衝刺的狀態
+        state = CloseMonsterState::CROUCH;
         is_charging = true;
-        charge_counter = CloseMonsterSetting::charge_duration;
-        state = static_cast<CloseMonsterState>(23 + static_cast<int>(state) % 8); // 將狀態設為對應方向的蹲下動作
-    }
-    else 
-    {
-        // 普通移動狀態
-        double dx = hero_position.x - shape->center_x();
-        double dy = hero_position.y - shape->center_y();
-        double magnitude = sqrt(dx * dx + dy * dy);
-        shape->update_center_x(shape->center_x() + (dx / magnitude) * speed);
-        shape->update_center_y(shape->center_y() + (dy / magnitude) * speed);
-
-        // 根據方向設置狀態
-        if (abs(dx) > abs(dy))  state = (dx > 0) ? CloseMonsterState::RUN_RIGHT : CloseMonsterState::RUN_LEFT;
-        else state = (dy > 0) ? CloseMonsterState::RUN_DOWN : CloseMonsterState::RUN_UP;
+        charge_counter = charge_duration;
+    } else {
+        // 朝著英雄走動
+        state = CloseMonsterState::WALK;
+        shape->update_center_x(shape->center_x() + speed * (dx / distance_to_hero));
+        shape->update_center_y(shape->center_y() + speed * (dy / distance_to_hero));
     }
 }
 
-CloseMonster*CloseMonster::create_monster(CloseMonsterState state)
-{
-    CloseMonster* monster = new CloseMonster();
-    monster->state = state;
-    return monster;
+void CloseMonster::draw() {
+    DataCenter *DC = DataCenter::get_instance();
+    Point hero_position = DC->witch->get_position();
+
+    // 根據相對位置決定方向 (方向 1~8)
+    double angle = atan2(hero_position.y - shape->center_y(), hero_position.x - shape->center_x());
+    int dir = static_cast<int>((angle + M_PI) / (M_PI / 4)) % 8;
+
+    // 獲取對應狀態和方向的 GIF
+    GIFCenter *GIFC = GIFCenter::get_instance();
+    ALGIF_ANIMATION *gif = GIFC->get(gifPath[{state, dir}]);
+
+    // 畫出 GIF
+    algif_draw_gif(gif, shape->center_x() - gif->width / 2, shape->center_y() - gif->height / 2, 0);
 }
 
-void CloseMonster::set_position(int x,int y)
-{
-    
+void CloseMonster::set_position(int x, int y) {
+    shape->update_center_x(x);
+    shape->update_center_y(y);
 }

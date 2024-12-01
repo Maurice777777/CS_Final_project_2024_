@@ -19,6 +19,7 @@ public:
 	void load_level(int lvl);
 	void update();
 	void draw();
+	void generate_random_monster();
 	int remain_monsters() const {
 		int res = 0;
 		for(const int &i : num_of_monsters) res += i;
@@ -49,6 +50,7 @@ private:
 	 * @brief Number of each different type of monsters.
 	 */
 	std::vector<int> num_of_monsters;
+	std::vector<CloseMonster*>closemonsters;
 };
 
 #endif
