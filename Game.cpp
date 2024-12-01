@@ -195,7 +195,7 @@ bool Game::game_update()
 				debug_log("<Game> state: change to PAUSE\n");
 				state = STATE::PAUSE;
 			}
-			if(DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) 
+			if(DC->level->remain_monsters() == 0 && DC->closeMonsters.size() == 0) 
 			{
 				debug_log("<Game> state: change to END\n");
 				state = STATE::END;

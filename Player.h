@@ -6,6 +6,7 @@ class Player
 public:
 	Player();
 	void update();
+	void add_coin(int amount);
 	int HP;
 	int coin;
 private:

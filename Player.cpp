@@ -22,3 +22,8 @@ Player::update() {
 		coin_counter = coin_freq;
 	}
 }
+
+void Player::add_coin(int amount)
+{
+	coin+=amount;
+}

@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include <memory>  // 添加這一行來使用 std::shared_ptr
-
+#include "../shapes/Point.h"
 // 狀態的定義
 enum class CloseMonsterState {
     WALK,
@@ -20,7 +20,10 @@ public:
     void update();
     void draw();
     void set_position(int x, int y);
-
+    int get_HP() const;
+    void take_damage(int damage);
+    int get_money()const;
+    Point get_position()const;
 private:
     CloseMonsterState state = CloseMonsterState::WALK;
     double speed = 3.0; // 基本移動速度
@@ -31,7 +34,9 @@ private:
     int charge_range = 100; // 觸發衝刺的距離
     int charge_duration = 60; // 衝刺持續的時間（以幀計）
     std::shared_ptr<Rectangle> shape; // 使用 shared_ptr，確保包含了 <memory> 頭檔
-
+    int HP = 100;
+    int money = 10;
+    bool is_alive = true;
     // GIF 路徑對應
     std::map<std::pair<CloseMonsterState, int>, std::string> gifPath;
 };

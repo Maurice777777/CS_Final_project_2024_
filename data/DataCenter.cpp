@@ -45,14 +45,8 @@ DataCenter::~DataCenter() {
 	delete level;
 	delete witch;
 
-	for(Monster *&m : monsters) {
+	for(CloseMonster *&m : closeMonsters) {
 		delete m;
-	}
-	for(Tower *&t : towers) {
-		delete t;
-	}
-	for(Bullet *&b : towerBullets) {
-		delete b;
 	}
 
 	for(Witch_bullet *&wb:witchBullets)

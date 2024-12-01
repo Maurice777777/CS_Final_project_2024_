@@ -1,9 +1,10 @@
 #include "CloseMonster.h"
-#include "data/DataCenter.h"
-#include "RedWitch.h"
-#include "data/GIFCenter.h"
-#include "algif5/algif.h"
-#include "shapes/Rectangle.h"
+#include "../data/DataCenter.h"
+#include "../RedWitch.h"
+#include "../data/GIFCenter.h"
+#include "../algif5/algif.h"
+#include "../shapes/Rectangle.h"
+#include "../shapes/Point.h"
 #include <cmath>
 #define M_PI 3.14159265358979323846
 
@@ -105,4 +106,36 @@ void CloseMonster::draw() {
 void CloseMonster::set_position(int x, int y) {
     shape->update_center_x(x);
     shape->update_center_y(y);
+}
+
+int CloseMonster::get_HP()const
+{
+    return HP;
+}
+
+int CloseMonster::get_money()const
+{
+    return money;
+}
+
+void CloseMonster::take_damage(int damage)
+{
+   if(!is_alive) return;
+   HP -= damage;
+
+   if(HP<=0)
+   {
+      HP=0;
+      is_alive=false;
+      DataCenter *DC = DataCenter::get_instance();
+      //DC->player->add_coin(get_money());
+   }
+
+}
+
+Point CloseMonster::get_position()const
+{
+    double x = shape->center_x();
+    double y = shape->center_y();
+    return Point(x,y);
 }
