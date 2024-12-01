@@ -5,6 +5,7 @@
 #include <utility>
 #include <tuple>
 #include "./shapes/Rectangle.h"
+#include "./monsters/CloseMonster.h"
 
 /**
  * @brief The class manages data of each level.

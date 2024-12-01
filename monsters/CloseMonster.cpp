@@ -1,8 +1,8 @@
 #include "CloseMonster.h"
 #include "data/DataCenter.h"
+#include "RedWitch.h"
 #include "data/GIFCenter.h"
 #include "algif5/algif.h"
-#include "shapes/Point.h"
 #include "shapes/Rectangle.h"
 #include <cmath>
 #define M_PI 3.14159265358979323846

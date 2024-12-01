@@ -4,8 +4,6 @@
 #include <string>
 #include <map>
 #include <memory>  // 添加這一行來使用 std::shared_ptr
-#include "shapes/Point.h"
-#include "shapes/Rectangle.h"
 
 // 狀態的定義
 enum class CloseMonsterState {
